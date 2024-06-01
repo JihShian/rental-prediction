@@ -4,7 +4,7 @@ from xgboost import XGBRegressor
 from sklearn.preprocessing import LabelEncoder
 
 # Page title
-st.set_page_config(page_title='Rental Price Prediction', page_icon='🎫')
+st.set_page_config(page_title='Rental Price Prediction')
 st.title('Rental Price Prediction')
 st.info('This is a rental price prediction mainly based in KL & Selangor area. Fill in the information and check the predicted price below.')
 
