@@ -1,3 +1,5 @@
+import joblib
+from sklearn.ensemble import RandomForestRegressor
 import streamlit as st
 import pandas as pd
 from xgboost import XGBRegressor
@@ -28,6 +30,125 @@ furnished_bins = {
     'Not Furnished': 0,
     'Partially Furnished': 1,
     'Fully Furnished': 2
+}
+
+# Define a dictionary that maps each location to its corresponding region
+location_to_region = {
+    'Cheras': 'Selangor',
+    'Taman Desa': 'Kuala Lumpur',
+    'Sentul': 'Kuala Lumpur',
+    'Mont Kiara': 'Kuala Lumpur',
+    'Setapak': 'Kuala Lumpur',
+    'Ampang': 'Selangor',
+    'Segambut': 'Kuala Lumpur',
+    'Desa ParkCity': 'Kuala Lumpur',
+    'Bukit Jalil': 'Kuala Lumpur',
+    'Kepong': 'Kuala Lumpur',
+    'Wangsa Maju': 'Kuala Lumpur',
+    'Jalan Kuching': 'Kuala Lumpur',
+    'Bandar Menjalara': 'Kuala Lumpur',
+    'Old Klang Road': 'Kuala Lumpur',
+    'Desa Pandan': 'Kuala Lumpur',
+    'KLCC': 'Kuala Lumpur',
+    'Ampang Hilir': 'Kuala Lumpur',
+    'Bukit Bintang': 'Kuala Lumpur',
+    'KL City': 'Kuala Lumpur',
+    'Jalan Ipoh': 'Kuala Lumpur',
+    'Setiawangsa': 'Kuala Lumpur',
+    'Gombak': 'Selangor',
+    'Sungai Besi': 'Kuala Lumpur',
+    'Jinjang': 'Kuala Lumpur',
+    'Sri Petaling': 'Kuala Lumpur',
+    'Bangsar South': 'Kuala Lumpur',
+    'Pantai': 'Kuala Lumpur',
+    'Brickfields': 'Kuala Lumpur',
+    'Kuchai Lama': 'Kuala Lumpur',
+    'Jalan Sultan Ismail': 'Kuala Lumpur',
+    'Bangsar': 'Kuala Lumpur',
+    'Pandan Indah': 'Kuala Lumpur',
+    'Pandan Jaya': 'Kuala Lumpur',
+    'Damansara Heights': 'Kuala Lumpur',
+    'Bandar Damai Perdana': 'Kuala Lumpur',
+    'Titiwangsa': 'Kuala Lumpur',
+    'Bandar Tasik Selatan': 'Kuala Lumpur',
+    'Pandan Perdana': 'Kuala Lumpur',
+    'Keramat': 'Kuala Lumpur',
+    'Pudu': 'Kuala Lumpur',
+    'OUG': 'Kuala Lumpur',
+    'Taman Tun Dr Ismail': 'Kuala Lumpur',
+    'Sri Hartamas': 'Kuala Lumpur',
+    'Solaris Dutamas': 'Kuala Lumpur',
+    'Puchong': 'Selangor',
+    'Seputeh': 'Kuala Lumpur',
+    'Sri Damansara': 'Kuala Lumpur',
+    'Taman Melawati': 'Kuala Lumpur',
+    'Desa Petaling': 'Kuala Lumpur',
+    'Others': 'Kuala Lumpur',
+    'Serdang': 'Selangor',
+    'City Centre': 'Kuala Lumpur',
+    'Salak Selatan': 'Kuala Lumpur',
+    'Sungai Penchala': 'Kuala Lumpur',
+    'Mid Valley City': 'Kuala Lumpur',
+    'Damansara': 'Kuala Lumpur',
+    'Cyberjaya': 'Selangor',
+    'Shah Alam': 'Selangor',
+    'Klang': 'Selangor',
+    'Petaling Jaya': 'Selangor',
+    'Subang Jaya': 'Selangor',
+    'Bandar Sunway': 'Selangor',
+    'Seri Kembangan': 'Selangor',
+    'Kajang': 'Selangor',
+    'Rawang': 'Selangor',
+    'Kota Damansara': 'Selangor',
+    'Batu Caves': 'Selangor',
+    'Semenyih': 'Selangor',
+    'Bukit Jelutong': 'Selangor',
+    'USJ': 'Selangor',
+    'Damansara Damai': 'Selangor',
+    'Bandar Mahkota Cheras': 'Selangor',
+    'Puncak Alam': 'Selangor',
+    'Sepang': 'Selangor',
+    'Kuala Langat': 'Selangor',
+    'Setia Alam': 'Selangor',
+    'Selayang': 'Selangor',
+    'Sungai Buloh': 'Selangor',
+    'Bangi': 'Selangor',
+    'Dengkil': 'Selangor',
+    'Ara Damansara': 'Selangor',
+    'I-City': 'Selangor',
+    'Bandar Sri Damansara': 'Selangor',
+    'Damansara Perdana': 'Selangor',
+    'Bandar Saujana Putra': 'Selangor',
+    'Kota Kemuning': 'Selangor',
+    'Ulu Klang': 'Selangor',
+    'Kapar': 'Selangor',
+    'Balakong': 'Selangor',
+    'Bandar Sungai Long': 'Selangor',
+    'Port Klang': 'Selangor',
+    'Hulu Langat': 'Selangor',
+    'Bandar Kinrara': 'Selangor',
+    'Jenjarom': 'Selangor',
+    'Glenmarie': 'Selangor',
+    'Kelana Jaya': 'Selangor',
+    'Puchong South': 'Selangor',
+    'Alam Impian': 'Selangor',
+    'Pulau Indah (Pulau Lumut)': 'Selangor',
+    'Bandar Bukit Tinggi': 'Selangor',
+    'Putra Heights': 'Selangor',
+    'Saujana Utama': 'Selangor',
+    'Bandar Bukit Raja': 'Selangor',
+    'Bandar Utama': 'Selangor',
+    'Subang Bestari': 'Selangor',
+    'Bandar Botanic': 'Selangor',
+    'Banting': 'Selangor',
+    'Kuala Selangor': 'Selangor',
+    'Salak Tinggi': 'Selangor',
+    'Serendah': 'Selangor',
+    'Bukit Beruntung': 'Selangor',
+    'Mutiara Damansara': 'Selangor',
+    'Telok Panglima Garang': 'Selangor',
+    'Bukit Subang': 'Selangor',
+    'Puncak Jalil': 'Selangor'
 }
 
 # Define location bins
@@ -153,35 +274,17 @@ data = load_data()
 label_encoder = LabelEncoder()
 label_encoder.fit(data['property_type'])
 
-# Preprocess data and train XGBoost model
-def preprocess_and_train_model():
-    
-    label_encoder = LabelEncoder()
-    # Preprocess data
-    data['property_type'] = label_encoder.fit_transform(data['property_type'])
-    data['region'] = label_encoder.fit_transform(data['region'])
-
-    # Split data into features and target
-    X = data.drop(['monthly_rent', 'location'], axis=1)
-    y = data['monthly_rent']
-
-    # Train XGBoost model
-    model = XGBRegressor()
-    model.fit(X, y)
-
-    return model
-
 # Train the model
-model = preprocess_and_train_model()
+model = joblib.load('RF_model.pkl')
 
 # Rental Price prediction form
 with st.form('predict'):
     location = st.selectbox('Location', list(location_bins.keys()))
+    region = st.selectbox('Region', list(region_bins.keys()))
     property_type = st.selectbox('Property Type',['Apartment', 'Condominium', 'Duplex' ,'Flat', 'Service Residence', 'Studio', 'Townhouse Condo', 'Others'])
     rooms = st.selectbox('Rooms Number',['1', '2','3','4','5','6','7','8','9','10'])
     size = st.number_input('Size (sqft)')
     furnished = st.selectbox('Furnished',list(furnished_bins.keys()))
-    region = st.selectbox('Region', list(region_bins.keys()))
     gymnasium = st.radio("Gymnasium", ("Yes", "No"))
     air_cond = st.radio("Air-cond", ("Yes", "No"))
     washing_machine = st.radio("Washing Machine", ("Yes", "No"))
@@ -200,4 +303,4 @@ if submit:
     region = region_bins[region]
     input_data = [[property_type, rooms, size, furnished, region, gymnasium, air_cond, washing_machine, swimming_pool, location_bin]]
     prediction = model.predict(input_data)
-    st.write("Predicted Rental Price:", prediction[0])
+    st.write("Predicted Rental Price:", round(prediction[0], 2))
