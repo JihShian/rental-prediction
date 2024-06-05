@@ -54,7 +54,8 @@ def preprocess_and_train_model(data):
     best_model = XGBRegressor(**best_params)
     best_model.fit(X_train, y_train)
 
-    return model
+    return best_model
+
 
 # Load data
 data = pd.read_csv('cleaned_data.csv').copy()
